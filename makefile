@@ -12,7 +12,7 @@ TARGET2 = client
 
 PROG : $(TARGET1) $(TARGET2)
 	
-$(TARGET1): server.c common.c
+$(TARGET1): server.c common.c utility.c
 	$(CC) $^ $(LIB) -o $@ -g
 
 $(TARGET2): client.c common.c
