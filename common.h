@@ -6,8 +6,12 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include "utility.h"
 
-extern void error(char *msg);
+void error(char *msg);
+extern char mid_msg[256];
 
 #define true 1
 #define false 0
