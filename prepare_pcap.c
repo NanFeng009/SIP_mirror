@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include "utility.h"
 #include <unistd.h>
+#include "send_packet.h"
 
 #define PCAP_MAXPACKET 1500
 #define MAX_PATH                   250
@@ -17,6 +18,12 @@
 typedef struct _ether_type_hdr {
     uint16_t ether_type; /* we only need the type, so we can determine, if the next header is IPv4 or IPv6 */
 } ether_type_hdr;
+
+uint16_t checksum_carry(int s)
+{
+    int s_c = (s >> 16) + (s & 0xffff);
+    return (~(s_c + (s_c >> 16)) & 0xffff);
+}
 
 int check(uint16_t *buffer, int len)
 {
@@ -184,15 +191,38 @@ void free_pcaps(pcap_pkts* pkts)
 int main()
 {
     pcap_pkts* pkts;
+    play_args_t* play_args = 0;
+    play_args_t play_args_a;
+    
+    struct sockaddr_in sin;
+    memset(&(play_args_a.to), 0, sizeof(struct sockaddr_storage));
+    memset(&(play_args_a.from), 0, sizeof(struct sockaddr_storage));
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_family = AF_INET;
+    sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+    sin.sin_port = htons( 7063 );
+    memcpy(&(play_args_a.to), &sin, sizeof(sin));
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_family = AF_INET;
+    sin.sin_addr.s_addr = inet_addr("127.0.0.1");
+    sin.sin_port = htons( 7064 );
+    memcpy(&(play_args_a.from), &sin, sizeof(sin));
+    
+
     pkts = (pcap_pkts *)malloc(sizeof(pcap_pkts));
     pkts->file = find_file("bootp1.pcapng");
     prepare_pkts(pkts->file, pkts);
     str2hex1((unsigned char *)(((pkts->pkt))->data), ((pkts->pkt))->pktlen);
-    free_pcaps(pkts);
+
+    play_args_a.pcap = pkts;
+    play_args_a.last_seq_no = 100;
+    play_args = &play_args_a;
+
+    send_packets( play_args );
+    //free_pcaps(pkts);
     return 1;
 }
 
-int send_packets()
 
 
 /*

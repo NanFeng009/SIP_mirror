@@ -1,3 +1,9 @@
+#ifndef _SIPP_PREPARE_PCAP_H_
+#define _SIPP_PREPARE_PCAP_H_
+
+
+#include <stdint.h>
+
 
 typedef struct {
     u_char* data;
@@ -15,3 +21,5 @@ typedef struct {
     pcap_pkt* pkt;
 
 } pcap_pkts;
+
+#endif/*_SIPP_PREPARE_PCAP_H_*/
