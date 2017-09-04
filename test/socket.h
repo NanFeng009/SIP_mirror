@@ -1,7 +1,37 @@
 /* This file was automatically generated.  Do not edit! */
+void main();
+int main(int argc,char **argv);
+int main();
 int main();
 typedef enum { false, true  }bool;
-typedef struct SIPpSocket SIPpSocket;
+typedef struct socketbuf socketbuf;
+struct socketbuf {
+    u_char* pktdata;
+    u_long pktlen;
+    long interval;
+    struct timeval ts;
+    int partial_check;
+    char *pkt_src; //need to free when end
+    char *pkt_dst;
+    struct socketbuf *next;
+};
+typedef struct {
+    int ss_count; /* How many users are there of this sockets? */
+    int ss_transport; /*T_TCP, T_UDP, or */
+    int ss_fd;  /* The underlying file descriptor for this socket. */
+    int ss_port; /* The port used by this socket */
+    struct sockaddr_storage ss_dest; /* Who we are talking to. */
+    int ss_pollidx; /* The index of this socket in our poll structures. */
+    struct socketbuf *ss_in;    /* Buffered input. */
+    struct socketbuf *ss_out;   /* Buffered output. */
+    size_t ss_msglen;           /* Is there a complete SIP message waiting, and if so how big? */
+
+    bool ss_congested; /* Is this socket congested? */
+    bool ss_invalid; /* Has this socket been closed remotely? */
+
+    bool ss_changed_dest;   /* Has the destination changed from default. */
+
+}SIPpSocket;
 void invalidate(SIPpSocket *sock);
 #define T_TCP                      1
 #define T_TLS                      2
@@ -12,6 +42,14 @@ void abort1(SIPpSocket *sock);
 int check_for_message(SIPpSocket *sock);
 void sipp_customize_socket(SIPpSocket *socket);
 extern int buff_size;
+typedef enum {
+    ARP = 0x0806,
+    IP = 0x0800,
+    LLDP = 0x88cc,
+    CDP = 0x2000,
+    TLS =  0x888e,
+    IPV6 = 0x86dd
+}protocol;
 #define LOCAL static
 extern int transport;
 LOCAL int socket_fd(int transport);
@@ -27,7 +65,6 @@ extern char local_ip_escaped[42];
 extern char local_ip[40];
 extern int local_port;
 #define NO_COPY 0
-typedef struct socketbuf socketbuf;
 void buffer_read(SIPpSocket *sock,struct socketbuf *newbuf);
 #define DO_COPY 1
 struct socketbuf *alloc_socketbuf(char *buffer,size_t size,int copy,struct sockaddr_storage *dest);
@@ -49,14 +86,6 @@ int flush(SIPpSocket *sock);
 socklen_t socklen_from_addr(const struct sockaddr_storage *ss);
 LOCAL int send_nowait(int s,const void *msg,int len,int flags);
 ssize_t write_primitive(SIPpSocket *sock,const char *buffer,size_t len,struct sockaddr_storage *dest);
-struct socketbuf {
-    char *buf;
-    size_t len;
-    size_t offset;
-    struct sockaddr_storage addr;
-    struct socketbuf *next;
-
-};
 void free_socketbuf(struct socketbuf *socketbuf);
 #define LOG(format, args...) do {                \
     printf("%s: "format"\n", __func__, ##args);  \
@@ -68,23 +97,6 @@ extern int pending_messages;
 extern struct sockaddr_storage remote_sockaddr;
 #define SIPP_MAXFDS                65536
 extern SIPpSocket *sockets[SIPP_MAXFDS];
-struct SIPpSocket {
-    int ss_count; /* How many users are there of this sockets? */
-    int ss_transport; /*T_TCP, T_UDP, or */
-    int ss_fd;  /* The underlying file descriptor for this socket. */
-    int ss_port; /* The port used by this socket */
-    struct sockaddr_storage ss_dest; /* Who we are talking to. */
-    int ss_pollidx; /* The index of this socket in our poll structures. */
-    struct socketbuf *ss_in;    /* Buffered input. */
-    struct socketbuf *ss_out;   /* Buffered output. */
-    size_t ss_msglen;           /* Is there a complete SIP message waiting, and if so how big? */
-
-    bool ss_congested; /* Is this socket congested? */
-    bool ss_invalid; /* Has this socket been closed remotely? */
-
-    bool ss_changed_dest;   /* Has the destination changed from default. */
-
-};
 extern struct epoll_event *epollevents;
 extern struct epoll_event epollfiles[SIPP_MAXFDS];
 extern int epollfd;

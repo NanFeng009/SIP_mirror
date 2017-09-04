@@ -1,3 +1,4 @@
+#include "server.h"
 #include <pthread.h>
 #include <signal.h>
 #include "common.h"

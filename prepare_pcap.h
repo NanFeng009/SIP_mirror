@@ -2,7 +2,6 @@
 #define _SIPP_PREPARE_PCAP_H_
 
 
-#include <stdint.h>
 
 
 typedef struct {
@@ -18,7 +17,7 @@ typedef struct {
     uint16_t base;
     u_long max_length;
     pcap_pkt* max;
-    pcap_pkt* pkt;
+    pcap_pkt* pkts;
 
 } pcap_pkts;
 

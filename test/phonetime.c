@@ -1,6 +1,7 @@
-#include "phonetime.h"
 #include <unistd.h>
 #include <time.h>
+
+#include "phonetime.h"
 
 /********************** Clock variables ***********************/
 
@@ -48,3 +49,15 @@ void sipp_usleep(unsigned long usec)
     usec %= 1000000;
     usleep(usec);
 }
+
+/*
+long computeDiffTimeInMs(struct timeval* tf, struct timeval* ti)
+{
+    long v1, v2;
+
+    v1 = tf->tv_sec - ti->tv_sec;
+    v2 = tf->tv_usec - ti->tv_usec;
+    if (v2 < 0) v2 += 1000000, v1--;
+    return (v1*1000 + v2/1000);
+}
+*/

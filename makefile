@@ -22,3 +22,5 @@ $(TARGET2): client.c common.c
 
 clean:
 	-rm *.o
+
+//gcc utility.c prepare_pcap.c send_packet.c -lpcap -lpthread

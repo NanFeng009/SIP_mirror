@@ -88,7 +88,7 @@ int send_packets(play_args_t* play_args)
 #endif
     udp = (struct udphdr *)buffer;
 
-    pkt_index = pkts->pkt;
+    pkt_index = pkts->pkts;
     pkt_max = pkts->max;
 
     if(media_ip_is_ipv6){

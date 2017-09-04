@@ -168,7 +168,7 @@ size_t get_ethertype_offset(int link, const uint8_t* pktdata)
 }
 
 
-static char* find_file(const char* filename)
+LOCAL char* find_file(const char* filename)
 {
     if(access(filename, R_OK) < 0){
         printf("unable to read file %s\n", filename);
@@ -179,11 +179,11 @@ static char* find_file(const char* filename)
 void free_pcaps(pcap_pkts* pkts)
 {
     pcap_pkt *it;
-    for(it = pkts->pkt; it != pkts->max; ++it){
+    for(it = pkts->pkts; it != pkts->max; ++it){
         free(it->data);
     }
-    free(pkts->pkt);
-    free(pkts->file);
+    free(pkts->pkts);
+    //free(pkts->file);
     free(pkts);
 }
 
@@ -212,14 +212,14 @@ int main()
     pkts = (pcap_pkts *)malloc(sizeof(pcap_pkts));
     pkts->file = find_file("bootp1.pcapng");
     prepare_pkts(pkts->file, pkts);
-    str2hex1((unsigned char *)(((pkts->pkt))->data), ((pkts->pkt))->pktlen);
+    str2hex1((unsigned char *)(((pkts->pkts))->data), ((pkts->pkts))->pktlen);
 
     play_args_a.pcap = pkts;
     play_args_a.last_seq_no = 100;
     play_args = &play_args_a;
 
     send_packets( play_args );
-    //free_pcaps(pkts);
+    free_pcaps(pkts);
     return 1;
 }
 
@@ -250,7 +250,7 @@ int prepare_pkts(const char * file, pcap_pkts* pkts)
 
     char buf[28];
 
-    pkts->pkt = NULL;
+    pkts->pkts = NULL;
 
     char errbuf[PCAP_ERRBUF_SIZE];
 
@@ -308,10 +308,10 @@ int prepare_pkts(const char * file, pcap_pkts* pkts)
 
         }
         /* BUG: inefficient */
-        pkts->pkt = (pcap_pkt *)realloc(pkts->pkt, sizeof(*(pkts->pkt)) * (n_pkts + 1));
-        if (!pkts->pkt)
+        pkts->pkts = (pcap_pkt *)realloc(pkts->pkts, sizeof(*(pkts->pkts)) * (n_pkts + 1));
+        if (!pkts->pkts)
             printf("Can't re-allocate memory for pcap pkt");
-        pkt_index = pkts->pkt + n_pkts;
+        pkt_index = pkts->pkts + n_pkts;
         pkt_index->pktlen = pktlen;
         pkt_index->ts = pkthdr->ts;
         if (format_timeval(&(pkt_index->ts), buf, sizeof(buf)) > 0) {
@@ -338,7 +338,7 @@ int prepare_pkts(const char * file, pcap_pkts* pkts)
 
 
     }
-    pkts->max = pkts->pkt + n_pkts;
+    pkts->max = pkts->pkts + n_pkts;
     pkts->max_length = max_length;
     pkts->base = base;
     fprintf(stderr, "In pcap bootp.pcapnp, npkts %d\nmax pkt length %lu\nbase port %d\n",  n_pkts, max_length, base);
