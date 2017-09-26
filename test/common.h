@@ -1,30 +1,23 @@
-/* payload data */
-struct data
-{
-    uint8_t* payload;
-    uint16_t  pktlen;
-    struct data* next;
+#define WIRESHARK_ENTRY_UDP 0
+#define WIRESHARK_ENTRY_TCP 1
+#define WIRESHARK_ENTRY_MAX 2
 
-};
-struct paly_payload{
-    uint8_t  ip_p;
-    uint16_t port;
+struct wireshark_entry{
     /* IP layer variables */
     struct ip *iphdr;
-    union
-    {
+    /* transport layer */
+    union{
         /* TCP layer variable */
         struct tcphdr *tcphdr;
         /* UDP layer variable */
         struct udphdr *udphdr;
+    };
+    /* application data */
+    uint8_t * payload;
 
-    }thdr;
-    /* payload data */
-    struct data data;
-
+    struct wireshark_entry * next;
 };
 
-#define NUM 5
 
 #define LOG(format, args...) do {                \
     printf("%s: "format"\n", __func__, ##args);  \
@@ -33,7 +26,8 @@ struct paly_payload{
 #define SIZE_ETHERNET 14
 #define IP4_HDRLEN 20         // IPv4 header length
 #define UDP_HDRLEN 8         // UDP header length, excludes options data
-#define TCP_HDRLEN(tcphdr) (((tcphdr->th_off ) & 0x0f) * 4)
+#define TCP_HDRMIN 20         // TCP header min length
+#define TCP_HDRLEN(thhdr) (((((struct tcphdr *)thhdr)->th_off ) & 0x0f) * 4)
 
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN 6
@@ -43,7 +37,6 @@ struct sniff_ethernet {
     u_char ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
     u_char ether_shost[ETHER_ADDR_LEN]; /* Source host address */
     u_short ether_type; /* IP? ARP? RARP? etc */
-
 
 };
 
@@ -95,10 +88,36 @@ struct sniff_tcp {
 
 };
 
-/* UDP header */
-struct udphdr {
-    u_short uh_sport;/* source port */
-    u_short uh_dport;/* destination port */
-    u_short uh_ulen;/* udp length */
-    u_short uh_sum;/* udp checksum */
-};              
+struct ipkeymap {
+    uint16_t ip_id;
+    struct in_addr ip_src;
+    struct in_addr ip_dst;
+};
+
+struct tcpkeymap {
+    uint16_t th_sport;
+    uint16_t th_dport;
+    uint32_t th_seq;
+    uint32_t th_ack;
+};
+
+struct sipkeymap {
+    char remote_service[40];
+    char remote_ip[40];
+    char remote_port[40];
+    char * from_tag;//get_from_tag()
+
+    char local_service[40];
+    char local_ip[40];
+    char local_port[40];
+
+    char request[40]; 
+    char * call_id;  //get_call_id()
+    char cseqmethon[40];//extract_cseq_method()
+    char branch[40];//extract_transaction(); txn
+    char contact[40];
+    unsigned long int cseq;//get_cseq_value()
+
+};      
+
+
